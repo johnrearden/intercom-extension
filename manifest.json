@@ -1,0 +1,25 @@
+{
+    "manifest_version": 3,
+    "name": "Intercom Unassigned Extension",
+    "description": "Extension icon, when pinned, will show a badge with the number of unassigned conversations in Intercom.",
+    "version": "1.0",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "script.js"
+            ],
+            "matches": [
+                "https://app.intercom.com/*",
+                "https://app.intercom.io/*"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "action": {
+        "default_popup": "hello.html",
+        "default_icon": "assets/favicon/normal/favicon.ico"
+    }
+}
