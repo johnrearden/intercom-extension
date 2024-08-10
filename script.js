@@ -1,14 +1,18 @@
 let nodesAddedCount = 0;
 let debounceTimer;
+let loadStartTimestamp = Date.now();
 const DEBOUNCE_TIME = 2000;
 
 function findElementUsingXPath() {
+    console.log('findElementUsingXPath');
     var xpathResult = document.evaluate("//span[text()='Unassigned']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     var spanElement = xpathResult.singleNodeValue;
     if (spanElement) {
         if (spanElement.id === 'unassigned-span') {
+            console.log('Element already processed');
             return null; // Element already processed
         } else {
+            console.log('Element found:', spanElement);
             spanElement.id = 'unassigned-span';
         }
         const countSpan = getAllSiblings(spanElement, spanElement.parentElement)[0];
@@ -44,13 +48,20 @@ function observeDOMChanges() {
                 nodesAddedCount += mutation.addedNodes.length;
             }
 
-            // Debounce the observer callback, as there are 4000+ nodes added.
+            // Debounce the observer callback, as there are 4000+ nodes added. This can fail if there is
+            // a regular node change occurring on an interval shorter than the debounce time.
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 observer.disconnect();
-                console.log('Nodes added:', nodesAddedCount);
                 onEmberNodesAdded();
             }, DEBOUNCE_TIME);
+
+            // Bail out of waiting for all the nodes to be added after a reasonable interval.
+            if (Date.now() - loadStartTimestamp > DEBOUNCE_TIME * 2) {
+                clearTimeout(debounceTimer);
+                observer.disconnect();
+                onEmberNodesAdded();
+            }
         });
     });
 
