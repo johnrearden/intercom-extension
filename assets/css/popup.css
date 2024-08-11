@@ -1,0 +1,28 @@
+body {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #030303;
+    color: whitesmoke;
+    margin-bottom: 10px;
+}
+
+#unassigned-threshold {
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+h4, p {
+    text-align: center;
+}
+
+.control-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}

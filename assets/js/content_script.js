@@ -17,14 +17,15 @@ function findElementUsingXPath() {
         }
         const countSpan = getAllSiblings(spanElement, spanElement.parentElement)[0];
         countSpan.id = 'unassigned-count-span';
-        chrome.runtime.sendMessage({ action: `unassigned=${countSpan.textContent.trim()}` });
+        console.log('countSpan:', countSpan, 'message : ', `unassigned=${countSpan.textContent.trim()}`);
+        chrome.runtime.sendMessage({ action: `unassigned_count=${countSpan.textContent.trim()}` });
 
         // Observe the count span for changes, and update the extension badge if necessary.
         const countMutationObserver = new MutationObserver((mutations) => {
             console.log('Mutation observed:', mutations);
             const span = document.getElementById('unassigned-count-span');
-            chrome.runtime.sendMessage({ action: `unassigned=${span.textContent.trim()}` });
-            
+            chrome.runtime.sendMessage({ action: `unassigned_count=${span.textContent.trim()}` });
+
         });
 
         countMutationObserver.observe(countSpan, {
@@ -33,7 +34,7 @@ function findElementUsingXPath() {
             childList: true,
             subtree: true
         });
-        
+
         return spanElement;
     } else {
         return null;
@@ -41,6 +42,7 @@ function findElementUsingXPath() {
 }
 
 function observeDOMChanges() {
+    console.log('observeDOMChanges');
     const observer = new MutationObserver((mutations, observer) => {
         mutations.forEach((mutation) => {
             // Check if the target element is present
@@ -50,19 +52,23 @@ function observeDOMChanges() {
 
             // Debounce the observer callback, as there are 4000+ nodes added. This can fail if there is
             // a regular node change occurring on an interval shorter than the debounce time.
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                observer.disconnect();
-                onEmberNodesAdded();
-            }, DEBOUNCE_TIME);
 
-            // Bail out of waiting for all the nodes to be added after a reasonable interval.
-            if (Date.now() - loadStartTimestamp > DEBOUNCE_TIME * 2) {
-                clearTimeout(debounceTimer);
-                observer.disconnect();
-                onEmberNodesAdded();
-            }
         });
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            observer.disconnect();
+            console.log('Debounced observer callback');
+            onEmberNodesAdded();
+        }, DEBOUNCE_TIME);
+
+        // Bail out of waiting for all the nodes to be added after a reasonable interval.
+        if (Date.now() - loadStartTimestamp > DEBOUNCE_TIME * 4) {
+            console.log(Date.now() - loadStartTimestamp);
+            clearTimeout(debounceTimer);
+            observer.disconnect();
+            console.log('Bailing out of waiting for all nodes to be added');
+            onEmberNodesAdded();
+        }
     });
 
     // Start observing the document body for changes
@@ -81,12 +87,10 @@ const onEmberNodesAdded = () => {
 if (document.readyState === 'loading') {
     console.log('loading');
     document.addEventListener('DOMContentLoaded', () => {
-        findElementUsingXPath();
         observeDOMChanges();
     });
 } else {
     console.log('loaded');
-    findElementUsingXPath();
     observeDOMChanges();
 }
 

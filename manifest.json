@@ -1,15 +1,21 @@
 {
     "manifest_version": 3,
-    "name": "Intercom Unassigned Extension",
+    "name": "Intercom Unassigned Tickets Badge",
     "description": "Extension icon, when pinned, will show a badge with the number of unassigned conversations in Intercom.",
     "version": "1.0",
     "background": {
         "service_worker": "background.js"
     },
+    "permissions": [
+        "storage",
+        "tabs",
+        "activeTab",
+        "scripting"
+    ],
     "content_scripts": [
         {
             "js": [
-                "script.js"
+                "assets/js/content_script.js"
             ],
             "matches": [
                 "https://app.intercom.com/*",
@@ -19,7 +25,7 @@
         }
     ],
     "action": {
-        "default_popup": "hello.html",
+        "default_popup": "popup.html",
         "default_icon": "assets/favicon/normal/favicon.ico"
     }
 }
