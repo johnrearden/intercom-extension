@@ -13,7 +13,6 @@ chrome.storage.sync.get('unassignedThreshold', (result) => {
     if (result.unassignedThreshold) {
         unassignedThreshold = result.unassignedThreshold;
     }
-    updateBadge(count, unassignedThreshold);
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
