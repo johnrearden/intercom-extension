@@ -1,5 +1,6 @@
 let nodesAddedCount = 0;
 let debounceTimer;
+let updateInterval;
 let loadStartTimestamp = Date.now();
 const DEBOUNCE_TIME = 2000;
 
@@ -21,13 +22,20 @@ function findElementUsingXPath() {
             const span = document.getElementById('unassigned-count-span');
             chrome.runtime.sendMessage({ action: `unassigned_count=${span.textContent.trim()}` });
         });
-
         countMutationObserver.observe(countSpan, {
             characterData: true,
             attributes: true,
             childList: true,
             subtree: true
         });
+
+        // Message the background script every second with the unassigned count
+        // clearInterval(updateInterval);
+        // updateInterval = setInterval(() => {
+        //     const span = document.getElementById('unassigned-count-span');
+        //     chrome.runtime.sendMessage({ action: `unassigned_count=${span.textContent.trim()}` });
+        // }, 1000);
+
 
         return spanElement;
     } else {
@@ -87,3 +95,12 @@ function getAllSiblings(element, parent) {
     const children = [...parent.children];
     return children.filter(child => child !== element);
 }
+
+// Listen for message from background script requesting the unassigned count
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // Listen for the content-script to send the unassigned count
+    if (request.action.startsWith(gimme_the_unassigned_count)) {
+        const span = document.getElementById('unassigned-count-span');
+        chrome.runtime.sendMessage({ action: `unassigned_count=${span?.textContent.trim()}` });
+    }
+});
