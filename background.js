@@ -5,11 +5,10 @@ const ALLOWED_DIGITS = [];
 for (let i = 0; i <= 50; i++) {
     ALLOWED_DIGITS.push(i.toString());
 }
-let count;
-let unassignedThreshold;
-let fireInterval;
-let onFire = false;
-let badgeToggle = false;
+let unassignedThreshold;    // The threshold for alerting the user with some gentle animation
+let fireInterval;           // The interval for the fire animation setInterval call
+let onFire = false;         // Whether the fire animation is currently running
+let badgeToggle = false;    // Toggling this will show/hide the badge text
 
 
 // Get the unassigned threshold and flashing badge setting from storage
@@ -24,7 +23,7 @@ chrome.storage.sync.get('unassignedThreshold', (result) => {
 
 // Listen for messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log(request.action);
+
     // Listen for the content-script to send the unassigned count
     if (request.action.startsWith("unassigned_count=")) {
         chrome.action.setIcon({ path: 'assets/favicon/normal/favicon.ico' });
@@ -55,7 +54,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Light the fire
 const lightTheFire = () => {
-    console.log('Lighting the fire');
     animationCounter = 0;
     chrome.action.setBadgeText({ text: "" });
     fireInterval = setInterval(() => {
@@ -85,14 +83,12 @@ const extinguishTheFlames = () => {
 
 // Update the badge text and colour based on the count and threshold
 const updateBadge = (count, threshold) => {
-
     let intValue;
     if (ALLOWED_DIGITS.includes(count)) {
         intValue = parseInt(count);
     } else {
         intValue = -1;
     }
-
 
     // Set the badge colour based on the count and threshold
     if (intValue >= threshold) {

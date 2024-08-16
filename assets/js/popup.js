@@ -1,7 +1,7 @@
-let unassignedThreshold;
-let flashingBadge;
+let unassignedThreshold;        // The threshold for alerting the user with some gentle animation
+let animationFrameCounter = 0;  // The current frame of the animation
+
 const animationElement = document.getElementById('animation-image');
-let animationFrameCounter = 0;
 
 
 // Get the unassigned threshold from storage
@@ -18,6 +18,7 @@ document.getElementById('unassigned-threshold').addEventListener('change', (even
     chrome.runtime.sendMessage({ action: `unassigned_threshold=${unassignedThreshold}` });
 });
 
+// Runs the animation in the default extension popup, fired by left clicking on the extension icon
 setInterval(() => {
     animationFrameCounter++;
     if (animationFrameCounter >= 120) {
