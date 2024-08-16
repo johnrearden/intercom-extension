@@ -17,7 +17,7 @@ chrome.storage.sync.get('unassignedThreshold', (result) => {
     if (result.unassignedThreshold) {
         unassignedThreshold = result.unassignedThreshold;
     } else {
-        unassignedThreshold = 5;
+        unassignedThreshold = 6;
     }
 });
 
