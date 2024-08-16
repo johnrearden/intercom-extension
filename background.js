@@ -56,6 +56,9 @@ const updateBadge = (count, threshold) => {
 
 // Hack to keep background script running
 // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension/
-const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 20e3);
+const keepAlive = () => setInterval(() => {
+    chrome.runtime.getPlatformInfo();
+    console.log('Called getPlatformInfo, still alive');
+}, 20e3);
 chrome.runtime.onStartup.addListener(keepAlive);
 keepAlive();
