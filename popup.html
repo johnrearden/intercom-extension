@@ -6,9 +6,10 @@
 
 <body>
     <h4>Unassigned Ticket Badge</h4>
-    <p>The extension badge will change colour when the number of unassigned tickets hits the threshold.</p>
+    <p>The extension badge will change colour and flash when the number of unassigned tickets hits the threshold, and a small fire will start in the extension icon tray.</p>
+    <p>How many unassigned tickets before Intercom catches fire?</p>
     <div class="control-div">
-        <label for="unassigned-threshold">Ticket Threshold:</label>
+        <img id="animation-image" src="assets/images/animation_120/1_0.png" alt="On fire...." />
         <input type="number" id="unassigned-threshold" value="1" min="1" max="9">
     </div>
     <script src="assets/js/popup.js"></script>

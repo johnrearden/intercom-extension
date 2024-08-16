@@ -1,5 +1,5 @@
 body {
-    width: 250px;
+    width: 350px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -20,9 +20,19 @@ h4, p {
 
 .control-div {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
     margin-top: 10px;
     margin-bottom: 15px;
+}
+
+#unassigned-threshold {
+    background-color: transparent;
+    border: 1px solid whitesmoke;
+    border-radius: 5px;
+    color: whitesmoke;
+    text-align: center;
+    padding: 3px;
+    margin-top: 20px;
 }

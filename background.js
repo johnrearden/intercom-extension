@@ -1,10 +1,15 @@
 chrome.action.setIcon({ path: 'assets/favicon/normal/favicon.ico' });
+const GOOD_BADGE_COLOR = '#057823';
+const BAD_BADGE_COLOR = '#F53636';
 const ALLOWED_DIGITS = [];
 for (let i = 0; i <= 50; i++) {
     ALLOWED_DIGITS.push(i.toString());
 }
 let count;
 let unassignedThreshold;
+let fireInterval;
+let onFire = false;
+let badgeToggle = false;
 
 
 // Get the unassigned threshold and flashing badge setting from storage
@@ -12,13 +17,14 @@ chrome.storage.sync.get('unassignedThreshold', (result) => {
     if (result.unassignedThreshold) {
         unassignedThreshold = result.unassignedThreshold;
     } else {
-        unassignedThreshold = 3;
+        unassignedThreshold = 5;
     }
 });
 
 
 // Listen for messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log(request.action);
     // Listen for the content-script to send the unassigned count
     if (request.action.startsWith("unassigned_count=")) {
         chrome.action.setIcon({ path: 'assets/favicon/normal/favicon.ico' });
@@ -34,11 +40,52 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.sync.set({ "unassignedThreshold": unassignedThreshold });
         updateBadge(count, unassignedThreshold);
     }
+
+    // Listen for the popup to send the light the fire action
+    if (request.action.startsWith("light_the_fire")) {
+        chrome.action.setBadgeBackgroundColor({ color: '#000000' });
+        lightTheFire();
+    }
+
+    // Listen for the popup to send the extinguish the flames action
+    if (request.action.startsWith("extinguish_the_flames")) {
+        extinguishTheFlames();
+    }
 });
+
+// Light the fire
+const lightTheFire = () => {
+    console.log('Lighting the fire');
+    animationCounter = 0;
+    chrome.action.setBadgeText({ text: "" });
+    fireInterval = setInterval(() => {
+        animationCounter++;
+        if (animationCounter >= 8) {
+            animationCounter = 0;
+            badgeToggle = !badgeToggle;
+            if (badgeToggle) {
+                chrome.action.setBadgeText({ text: count });
+                chrome.action.setBadgeBackgroundColor({ color: BAD_BADGE_COLOR });
+            } else {
+                chrome.action.setBadgeText({ text: "" });
+            }
+        }
+        chrome.action.setIcon({ path: `assets/images/animation_8/1_${animationCounter}.png` });
+    }, 125);
+};
+
+const extinguishTheFlames = () => {
+    animationCounter = 0;
+    clearInterval(fireInterval);
+    chrome.action.setBadgeText({ text: count });
+    chrome.action.setBadgeBackgroundColor({ color: GOOD_BADGE_COLOR });
+    chrome.action.setIcon({ path: 'assets/favicon/normal/favicon.ico' });
+};
+
 
 // Update the badge text and colour based on the count and threshold
 const updateBadge = (count, threshold) => {
-    chrome.action.setBadgeText({ text: count });
+
     let intValue;
     if (ALLOWED_DIGITS.includes(count)) {
         intValue = parseInt(count);
@@ -46,11 +93,27 @@ const updateBadge = (count, threshold) => {
         intValue = -1;
     }
 
+
     // Set the badge colour based on the count and threshold
     if (intValue >= threshold) {
-        chrome.action.setBadgeBackgroundColor({ color: '#F53636' });
+        if (!onFire) {
+            lightTheFire();
+            onFire = true;
+        } else {
+            chrome.action.setBadgeBackgroundColor({ color: BAD_BADGE_COLOR });
+            chrome.action.setBadgeText({ text: count });
+        }
+        
     } else {
-        chrome.action.setBadgeBackgroundColor({ color: '#777777' });
+        if (onFire) {
+            extinguishTheFlames();
+            onFire = false;
+        } else {
+            chrome.action.setIcon({ path: 'assets/favicon/normal/favicon.ico' });
+            chrome.action.setBadgeBackgroundColor({ color: GOOD_BADGE_COLOR });
+            chrome.action.setBadgeText({ text: count });
+        }
+
     }
 }
 

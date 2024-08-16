@@ -1,5 +1,7 @@
 let unassignedThreshold;
 let flashingBadge;
+const animationElement = document.getElementById('animation-image');
+let animationFrameCounter = 0;
 
 
 // Get the unassigned threshold from storage
@@ -15,3 +17,11 @@ document.getElementById('unassigned-threshold').addEventListener('change', (even
     unassignedThreshold = event.target.value;
     chrome.runtime.sendMessage({ action: `unassigned_threshold=${unassignedThreshold}` });
 });
+
+setInterval(() => {
+    animationFrameCounter++;
+    if (animationFrameCounter >= 120) {
+        animationFrameCounter = 0;
+    }
+    animationElement.src = `assets/images/animation_120/1_${animationFrameCounter}.png`;
+}, 32);
