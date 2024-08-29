@@ -24,6 +24,8 @@ chrome.storage.sync.get('unassignedThreshold', (result) => {
 // Listen for messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
+    console.log('message received', request.action);
+
     // Listen for the content-script to send the unassigned count
     if (request.action.startsWith("unassigned_count=")) {
         chrome.action.setIcon({ path: 'assets/favicon/normal/favicon.ico' });

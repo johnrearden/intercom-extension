@@ -3,6 +3,7 @@ let debounceTimer;
 let updateInterval;
 let spanSearchTimeout;
 let retryInterval = 1000;
+const UPDATE_INTERVAL_PERIOD = 5000;
 let loadStartTimestamp = Date.now();
 const DEBOUNCE_TIME = 2000;
 
@@ -17,16 +18,10 @@ function findUnassignedCountSpan() {
         countSpan.id = 'unassigned-count-span';
 
         // Observe the count span for changes, and update the extension badge if necessary.
-        const countMutationObserver = new MutationObserver((mutations) => {
-            const span = document.getElementById('unassigned-count-span');
-            chrome.runtime.sendMessage({ action: `unassigned_count=${span.textContent.trim()}` });
-        });
-        countMutationObserver.observe(countSpan, {
-            characterData: true,
-            attributes: true,
-            childList: true,
-            subtree: true
-        });
+        clearInterval(updateInterval);
+        updateInterval = setInterval(() => {
+            chrome.runtime.sendMessage({ action: `unassigned_count=${countSpan.textContent.trim()}` });
+        }, UPDATE_INTERVAL_PERIOD);
         
     } else {
         retryInterval *= 2;
