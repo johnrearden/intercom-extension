@@ -1,21 +1,20 @@
 let nodesAddedCount = 0;
 let debounceTimer;
 let updateInterval;
+let spanSearchTimeout;
+let retryInterval = 1000;
 let loadStartTimestamp = Date.now();
 const DEBOUNCE_TIME = 2000;
 
-function findElementUsingXPath() {
-    var xpathResult = document.evaluate("//span[text()='Unassigned']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    var spanElement = xpathResult.singleNodeValue;
-    if (spanElement) {
-        if (spanElement.id === 'unassigned-span') {
-            return null; // Element already processed
-        } else {
-            spanElement.id = 'unassigned-span';
-        }
-        const countSpan = getAllSiblings(spanElement, spanElement.parentElement)[0];
-        countSpan.id = 'unassigned-count-span';
+function findUnassignedCountSpan() {
+    
+    clearTimeout(spanSearchTimeout);
+
+    const sidebar = document.querySelector(".inbox2__inbox-list-sidebar");
+    const countSpan = sidebar?.children[1].children[4].children[0].children[1].children[1];
+    if (countSpan && countSpan.tagName === "SPAN") {
         chrome.runtime.sendMessage({ action: `unassigned_count=${countSpan.textContent.trim()}` });
+        countSpan.id = 'unassigned-count-span';
 
         // Observe the count span for changes, and update the extension badge if necessary.
         const countMutationObserver = new MutationObserver((mutations) => {
@@ -28,19 +27,14 @@ function findElementUsingXPath() {
             childList: true,
             subtree: true
         });
-
-        // Message the background script every second with the unassigned count
-        // clearInterval(updateInterval);
-        // updateInterval = setInterval(() => {
-        //     const span = document.getElementById('unassigned-count-span');
-        //     chrome.runtime.sendMessage({ action: `unassigned_count=${span.textContent.trim()}` });
-        // }, 1000);
-
-
-        return spanElement;
+        
     } else {
-        return null;
+        retryInterval *= 2;
+        console.log(`Unassigned count span not found, rechecking in ${retryInterval / 1000}s`);
+        retryInterval = retryInterval >= 32000 ? 32000 : retryInterval;
+        spanSearchTimeout = setTimeout(findUnassignedCountSpan, retryInterval);
     }
+    
 }
 
 function observeDOMChanges() {
@@ -61,7 +55,6 @@ function observeDOMChanges() {
 
             // Bail out of waiting for all the nodes to be added after a reasonable interval.
             if (Date.now() - loadStartTimestamp > DEBOUNCE_TIME * 4) {
-                console.log(Date.now() - loadStartTimestamp);
                 clearTimeout(debounceTimer);
                 observer.disconnect();
                 onEmberNodesAdded();
@@ -78,7 +71,7 @@ function observeDOMChanges() {
 }
 
 const onEmberNodesAdded = () => {
-    findElementUsingXPath();
+    findUnassignedCountSpan();
 }
 
 
